@@ -255,6 +255,10 @@ input, select, textarea, button { font-family: inherit; }
   justify-content: center;
   overflow: hidden;
   background: linear-gradient(145deg, #080808 0%, #130f06 35%, #0e0e0e 65%, #08080f 100%);
+  background-image: url('images/header.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Brillo dorado radial sutil */
