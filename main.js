@@ -21,7 +21,27 @@ const propiedades = [
     admin: 60000,
     descripcion: 'Apartamento con salón comedor, zonas sociales, parqueadero común en unidad cerrada. Recibe vehículo de menor valor.',
     imagen: 'images/propiedad Robledo/Robledo-1.webp',
-  }
+    galeriaId: 'galeria',
+  },
+  {
+    id: 2,
+    titulo: 'Apartamento tercer piso en Coveñas',
+    tipo: 'apartamento',
+    operacion: 'venta',
+    precio: 300000000,
+    ciudad: 'covenas',
+    sector: 'Coveñas, Sucre – Barrio Sagoc',
+    area: 60,
+    habitaciones: 3,
+    banos: 2,
+    parqueadero: 'No incluye',
+    piso: 3,
+    ascensor: true,
+    admin: 0,
+    descripcion: 'Unidad residencial campestre con ascensor, piscina semiolímpica, zonas verdes, juegos infantiles, vigilancia 24 horas y unidad cerrada. A 10 minutos del mar.',
+    imagen: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.29 PM.webp',
+    galeriaId: 'galeria-covenas',
+  },
 ];
 
 /* ===== GALERÍA ===== */
@@ -29,6 +49,23 @@ const galeriaRobledo = Array.from({ length: 9 }, (_, i) => ({
   src: `images/propiedad Robledo/Robledo-${i + 1}.webp`,
   alt: `Apartamento Robledo — Foto ${i + 1}`,
 }));
+
+const galeriaCovenas = [
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.29 PM.webp',     alt: 'Apartamento Coveñas — Foto 1' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.29 PM (1).webp', alt: 'Apartamento Coveñas — Foto 2' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.29 PM (2).webp', alt: 'Apartamento Coveñas — Foto 3' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.29 PM (3).webp', alt: 'Apartamento Coveñas — Foto 4' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM.webp',     alt: 'Apartamento Coveñas — Foto 5' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (1).webp', alt: 'Apartamento Coveñas — Foto 6' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (2).webp', alt: 'Apartamento Coveñas — Foto 7' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (3).webp', alt: 'Apartamento Coveñas — Foto 8' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (4).webp', alt: 'Apartamento Coveñas — Foto 9' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (5).webp', alt: 'Apartamento Coveñas — Foto 10' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (6).webp', alt: 'Apartamento Coveñas — Foto 11' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (7).webp', alt: 'Apartamento Coveñas — Foto 12' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.30 PM (8).webp', alt: 'Apartamento Coveñas — Foto 13' },
+  { src: 'images/apartamento-covenas-sagoc/WhatsApp Image 2026-05-12 at 6.06.31 PM.webp',     alt: 'Apartamento Coveñas — Foto 14' },
+];
 
 /* ===== HELPERS ===== */
 function formatPrecio(num) {
@@ -72,12 +109,12 @@ function renderPropiedades(lista) {
     const card = document.createElement('article');
     card.className = 'property-card fade-in-up';
     card.innerHTML = `
-      <div class="property-img-wrapper">
+      <div class="property-img-wrapper" onclick="irAGaleria('${p.galeriaId || 'galeria'}')" style="cursor:pointer">
         <img src="${p.imagen}" alt="${p.titulo}" class="property-img" loading="lazy">
         <span class="property-badge badge-${p.operacion}">
           ${p.operacion === 'venta' ? 'En Venta' : 'En Arriendo'}
         </span>
-        <button class="property-wishlist" aria-label="Guardar propiedad en favoritos">♡</button>
+        <button class="property-wishlist" aria-label="Guardar propiedad en favoritos" onclick="event.stopPropagation()">♡</button>
       </div>
       <div class="property-body">
         <div class="property-price">${formatPrecio(p.precio)} COP</div>
@@ -94,7 +131,7 @@ function renderPropiedades(lista) {
         <p class="property-desc">${p.descripcion}</p>
         ${p.admin ? `<p class="property-admin">💰 ${formatAdmin(p.admin)}</p>` : ''}
         <div class="property-footer">
-          <button class="btn-card" onclick="irAGaleria()">Ver galería</button>
+          <button class="btn-card" onclick="irAGaleria('${p.galeriaId || 'galeria'}')">Ver galería</button>
           <a href="https://wa.me/573005981958?text=${waMsg}"
              class="btn-card-wa"
              target="_blank"
@@ -130,12 +167,9 @@ function renderPropiedades(lista) {
   observarElementos();
 }
 
-function irAGaleria() {
-  const galeria = document.getElementById('galeria');
-  if (!galeria) return;
-  const navH = 74;
-  const top = galeria.getBoundingClientRect().top + window.scrollY - navH;
-  window.scrollTo({ top, behavior: 'smooth' });
+function irAGaleria(galeriaId) {
+  const galeria = galerias[galeriaId] || galeriaRobledo;
+  abrirLightbox(0, galeria);
 }
 
 /* ===== FILTROS ===== */
@@ -217,28 +251,18 @@ function initRangoPrecios() {
   actualizar();
 }
 
-/* ===== GALERÍA ===== */
-function renderGaleria() {
-  const grid = document.getElementById('galleryGrid');
-  if (!grid) return;
-
-  galeriaRobledo.forEach((img, i) => {
-    const item = document.createElement('div');
-    item.className = 'gallery-item';
-    item.innerHTML = `
-      <img src="${img.src}" alt="${img.alt}" loading="lazy">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-icon">🔍</div>
-      </div>`;
-    item.addEventListener('click', () => abrirLightbox(i));
-    grid.appendChild(item);
-  });
-}
+/* ===== MAPA DE GALERÍAS ===== */
+const galerias = {
+  'galeria':         galeriaRobledo,
+  'galeria-covenas': galeriaCovenas,
+};
 
 /* ===== LIGHTBOX ===== */
+let galeriaActual = galeriaRobledo;
 let lightboxIndex = 0;
 
-function abrirLightbox(indice) {
+function abrirLightbox(indice, galeria) {
+  galeriaActual = galeria || galeriaRobledo;
   lightboxIndex = indice;
   const lb = document.getElementById('lightbox');
   lb.classList.add('active');
@@ -254,19 +278,19 @@ function cerrarLightbox() {
 function actualizarLightbox() {
   const img     = document.getElementById('lightboxImg');
   const counter = document.getElementById('lightboxCounter');
-  const data    = galeriaRobledo[lightboxIndex];
+  const data    = galeriaActual[lightboxIndex];
   img.src       = data.src;
   img.alt       = data.alt;
-  counter.textContent = `${lightboxIndex + 1} / ${galeriaRobledo.length}`;
+  counter.textContent = `${lightboxIndex + 1} / ${galeriaActual.length}`;
 }
 
 function imagenSiguiente() {
-  lightboxIndex = (lightboxIndex + 1) % galeriaRobledo.length;
+  lightboxIndex = (lightboxIndex + 1) % galeriaActual.length;
   actualizarLightbox();
 }
 
 function imagenAnterior() {
-  lightboxIndex = (lightboxIndex - 1 + galeriaRobledo.length) % galeriaRobledo.length;
+  lightboxIndex = (lightboxIndex - 1 + galeriaActual.length) % galeriaActual.length;
   actualizarLightbox();
 }
 
@@ -422,7 +446,6 @@ function initChips() {
 /* ===== INICIALIZACIÓN ===== */
 document.addEventListener('DOMContentLoaded', () => {
   renderPropiedades(propiedades);
-  renderGaleria();
   initLightbox();
   initNavbar();
   initRangoPrecios();
