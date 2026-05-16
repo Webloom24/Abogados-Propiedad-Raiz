@@ -2,8 +2,8 @@
    ABOGADOS & PROPIEDAD RAÍZ — Lógica principal
    ===================================================== */
 
-/* ===== DATOS DE PROPIEDADES ===== */
-const propiedades = [
+/* ===== DATOS DE PROPIEDADES (fallback local) ===== */
+const propiedadesLocales = [
   {
     id: 1,
     titulo: 'Apartamento en Venta · Robledo',
@@ -257,6 +257,9 @@ const galerias = {
   'galeria-covenas': galeriaCovenas,
 };
 
+/* Propiedades activas (local como fallback, se sobreescribe con Firestore) */
+let propiedades = propiedadesLocales;
+
 /* ===== LIGHTBOX ===== */
 let galeriaActual = galeriaRobledo;
 let lightboxIndex = 0;
@@ -444,7 +447,36 @@ function initChips() {
 }
 
 /* ===== INICIALIZACIÓN ===== */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  /* Intentar cargar desde Supabase si está configurado */
+  if (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL !== 'https://TU-PROYECTO.supabase.co') {
+    try {
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data, error } = await sb
+        .from('propiedades')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        propiedades = [];
+        data.forEach(row => {
+          const galeriaId = `galeria-${row.id}`;
+
+          if (Array.isArray(row.imagenes) && row.imagenes.length > 0) {
+            galerias[galeriaId] = row.imagenes.map((url, i) => ({
+              src: url,
+              alt: `${row.titulo || 'Propiedad'} — Foto ${i + 1}`,
+            }));
+          }
+
+          propiedades.push({ ...row, galeriaId });
+        });
+      }
+    } catch (_) {
+      /* Sin conexión o error — se usan datos locales */
+    }
+  }
+
   renderPropiedades(propiedades);
   initLightbox();
   initNavbar();

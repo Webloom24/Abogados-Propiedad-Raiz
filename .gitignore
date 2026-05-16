@@ -1,3 +1,6 @@
 ﻿# Carpeta privada — nunca se sube al repositorio
 privado/
 
+# Archivo Firebase obsoleto
+firebase-config.js
+

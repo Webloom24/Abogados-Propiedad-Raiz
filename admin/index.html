@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel Administrativo | Abogados & Propiedad Raíz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ===== PANTALLA DE LOGIN ===== -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <img src="../images/logo.webp" alt="Logo" class="login-logo">
+      <h1 class="login-title">Panel Administrativo</h1>
+      <p class="login-sub">Abogados & Propiedad Raíz</p>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="field-group">
+          <label for="loginEmail">Correo electrónico</label>
+          <input id="loginEmail" type="email" placeholder="admin@ejemplo.com" autocomplete="email" required>
+        </div>
+        <div class="field-group">
+          <label for="loginPass">Contraseña</label>
+          <div class="pass-wrapper">
+            <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="toggle-pass" id="togglePass" aria-label="Mostrar contraseña">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="login-error" id="loginError"></p>
+        <button type="submit" class="btn-login" id="btnLogin">Ingresar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="dashboard" class="dashboard hidden">
+
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="header-brand">
+        <img src="../images/logo.webp" alt="Logo" height="40">
+        <span class="header-title">Panel Admin</span>
+      </div>
+      <div class="header-user">
+        <span class="header-email" id="adminEmail"></span>
+        <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+      <!-- Toolbar -->
+      <div class="admin-toolbar">
+        <div class="toolbar-left">
+          <h2 class="toolbar-title">Propiedades</h2>
+          <span class="prop-count" id="propCount">0</span>
+        </div>
+        <button class="btn-nueva" id="btnNuevaPropiedad">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nueva Propiedad
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div id="loadingProps" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando propiedades...</p>
+      </div>
+
+      <!-- Lista de propiedades -->
+      <div id="propiedadesList" class="props-list"></div>
+
+    </main>
+  </div>
+
+  <!-- ===== MODAL AGREGAR PROPIEDAD ===== -->
+  <div id="modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+
+      <div class="modal-header">
+        <h2 id="modalTitle" class="modal-title">Nueva Propiedad</h2>
+        <button class="modal-close" id="modalClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="propForm" novalidate>
+
+          <div class="form-grid">
+
+            <!-- Título -->
+            <div class="fg full">
+              <label for="fTitulo">Título de la propiedad <span class="req">*</span></label>
+              <input id="fTitulo" type="text" placeholder="Ej: Apartamento en Venta · Robledo" required>
+            </div>
+
+            <!-- Tipo -->
+            <div class="fg">
+              <label for="fTipo">Tipo <span class="req">*</span></label>
+              <select id="fTipo" required>
+                <option value="">Selecciona...</option>
+                <option value="apartamento">Apartamento</option>
+                <option value="casa">Casa</option>
+                <option value="lote">Lote</option>
+                <option value="finca">Finca</option>
+                <option value="local">Local</option>
+              </select>
+            </div>
+
+            <!-- Operación -->
+            <div class="fg">
+              <label for="fOperacion">Operación <span class="req">*</span></label>
+              <select id="fOperacion" required>
+                <option value="">Selecciona...</option>
+                <option value="venta">Venta</option>
+                <option value="arriendo">Arriendo</option>
+              </select>
+            </div>
+
+            <!-- Ciudad -->
+            <div class="fg">
+              <label for="fCiudad">Ciudad <span class="req">*</span></label>
+              <input id="fCiudad" type="text" list="ciudadesList" placeholder="Ej: medellin" required>
+              <datalist id="ciudadesList">
+                <option value="medellin">
+                <option value="bogota">
+                <option value="cali">
+                <option value="barranquilla">
+                <option value="cartagena">
+                <option value="covenas">
+                <option value="santa marta">
+                <option value="pereira">
+                <option value="manizales">
+              </datalist>
+              <span class="field-hint">Minúsculas, sin tildes (sirve para el filtro del sitio)</span>
+            </div>
+
+            <!-- Sector -->
+            <div class="fg">
+              <label for="fSector">Sector / Barrio <span class="req">*</span></label>
+              <input id="fSector" type="text" placeholder="Ej: Robledo, Medellín" required>
+            </div>
+
+            <!-- Precio -->
+            <div class="fg">
+              <label for="fPrecio">Precio (COP) <span class="req">*</span></label>
+              <input id="fPrecio" type="number" placeholder="Ej: 165000000" min="0" required>
+            </div>
+
+            <!-- Administración -->
+            <div class="fg">
+              <label for="fAdmin">Administración mensual (COP)</label>
+              <input id="fAdmin" type="number" placeholder="0 si no aplica" min="0" value="0">
+            </div>
+
+            <!-- Área -->
+            <div class="fg">
+              <label for="fArea">Área (m²) <span class="req">*</span></label>
+              <input id="fArea" type="number" placeholder="Ej: 44.5" min="1" step="0.5" required>
+            </div>
+
+            <!-- Habitaciones -->
+            <div class="fg">
+              <label for="fHabitaciones">Habitaciones <span class="req">*</span></label>
+              <input id="fHabitaciones" type="number" placeholder="Ej: 2" min="0" required>
+            </div>
+
+            <!-- Baños -->
+            <div class="fg">
+              <label for="fBanos">Baños <span class="req">*</span></label>
+              <input id="fBanos" type="number" placeholder="Ej: 1" min="0" required>
+            </div>
+
+            <!-- Piso -->
+            <div class="fg">
+              <label for="fPiso">Piso <span class="req">*</span></label>
+              <input id="fPiso" type="number" placeholder="Ej: 5" min="0" required>
+            </div>
+
+            <!-- Parqueadero -->
+            <div class="fg">
+              <label for="fParqueadero">Parqueadero <span class="req">*</span></label>
+              <select id="fParqueadero" required>
+                <option value="">Selecciona...</option>
+                <option value="Propio">Propio</option>
+                <option value="Común">Común</option>
+                <option value="Cubierto">Cubierto</option>
+                <option value="No incluye">No incluye</option>
+              </select>
+            </div>
+
+            <!-- Ascensor -->
+            <div class="fg ascensor-wrap">
+              <label class="check-label">
+                <input id="fAscensor" type="checkbox">
+                <span class="check-box"></span>
+                Tiene ascensor
+              </label>
+            </div>
+
+            <!-- Descripción -->
+            <div class="fg full">
+              <label for="fDescripcion">Descripción <span class="req">*</span></label>
+              <textarea id="fDescripcion" rows="4" placeholder="Describe las características, zonas sociales, ubicación y ventajas de la propiedad..." required></textarea>
+            </div>
+
+            <!-- Zona de imágenes -->
+            <div class="fg full">
+              <label>Imágenes <span class="req">*</span></label>
+              <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Zona para subir imágenes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="drop-icon">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <p class="drop-main">Arrastra tus imágenes aquí</p>
+                <p class="drop-sub">o <span class="drop-link">haz clic para seleccionar</span></p>
+                <p class="drop-hint-img">JPG, PNG, WEBP · La primera imagen será la portada</p>
+                <input id="fImagenes" type="file" accept="image/*" multiple>
+              </div>
+              <div id="imagenesPreview" class="imagenes-preview"></div>
+            </div>
+
+          </div><!-- /form-grid -->
+
+          <!-- Barra de progreso -->
+          <div id="progressBar" class="progress-wrap hidden">
+            <div class="progress-track">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <p id="progressText" class="progress-text">Preparando...</p>
+          </div>
+
+        </form>
+      </div><!-- /modal-body -->
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" id="btnCancelar">Cancelar</button>
+        <button type="submit" form="propForm" class="btn-guardar" id="btnGuardar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Guardar Propiedad
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SUPABASE SDK ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="../supabase-config.js"></script>
+  <script src="admin.js"></script>
+
+</body>
+</html>
