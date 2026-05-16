@@ -211,7 +211,7 @@ function crearTarjetaAdmin(row) {
 
   card.innerHTML = `
     <div class="admin-prop-img">
-      <img src="${row.imagen || ''}" alt="${row.titulo || ''}"
+      <img src="${resolverUrl(row.imagen)}" alt="${row.titulo || ''}"
            onerror="this.style.display='none';this.parentElement.innerHTML='<div class=\'prop-img-placeholder\'>🏠</div>'">
     </div>
     <div class="admin-prop-info">
@@ -528,7 +528,7 @@ function renderAllPreviews() {
     const div = document.createElement('div');
     div.className = 'preview-item';
     div.innerHTML = `
-      <img src="${url}" alt="Imagen ${i + 1}">
+      <img src="${resolverUrl(url)}" alt="Imagen ${i + 1}">
       ${i === 0 && imagenesNuevas.length === 0 ? '<span class="preview-label">Portada</span>' : ''}
       <button class="preview-remove" type="button" aria-label="Eliminar">×</button>`;
     div.querySelector('.preview-remove').addEventListener('click', () => {
@@ -564,6 +564,13 @@ function extraerRutaStorage(url) {
   const idx = url.indexOf(marker);
   if (idx === -1) return null;
   return decodeURIComponent(url.substring(idx + marker.length));
+}
+
+/* Corrige rutas relativas locales para que funcionen desde la carpeta admin/ */
+function resolverUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('../')) return url;
+  return `../${url}`;
 }
 
 async function subirImagenes(files, propId) {
