@@ -79,13 +79,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  const tieneParamLogin = new URLSearchParams(window.location.search).has('login');
   const { data: { session } } = await sb.auth.getSession();
-  if (session) mostrarDashboard(session.user);
-  else         mostrarLogin();
+
+  if (session) {
+    mostrarDashboard(session.user);
+  } else if (tieneParamLogin) {
+    mostrarLogin();
+  } else {
+    /* Sin sesión y sin ?login → redirigir al sitio principal */
+    window.location.replace('../index.html');
+    return;
+  }
 
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session)  mostrarDashboard(session.user);
-    if (event === 'SIGNED_OUT')            mostrarLogin();
+    if (event === 'SIGNED_OUT') {
+      window.location.replace('../index.html');
+    }
   });
 
   initLoginForm();
