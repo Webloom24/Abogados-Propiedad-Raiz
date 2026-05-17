@@ -144,26 +144,6 @@ function renderPropiedades(lista) {
     grid.appendChild(card);
   });
 
-  /* Placeholders para completar la fila de 3 columnas en desktop */
-  const maxPlaceholders = 2;
-  const faltantes = Math.max(0, 3 - lista.length);
-  for (let i = 0; i < Math.min(faltantes, maxPlaceholders); i++) {
-    const ph = document.createElement('div');
-    ph.className = 'property-card-placeholder fade-in-up';
-    ph.innerHTML = `
-      <div class="placeholder-img">🏠</div>
-      <div class="placeholder-body">
-        <div style="height:18px;background:var(--dark-4);border-radius:4px;margin-bottom:12px;width:65%"></div>
-        <div style="height:13px;background:var(--dark-4);border-radius:4px;margin-bottom:8px;width:88%"></div>
-        <div style="height:13px;background:var(--dark-4);border-radius:4px;width:55%"></div>
-      </div>
-      <div class="placeholder-overlay">
-        <span class="placeholder-tag">Próximamente</span>
-        <p class="placeholder-desc">Nueva propiedad en catálogo</p>
-      </div>`;
-    grid.appendChild(ph);
-  }
-
   observarElementos();
 }
 
@@ -200,55 +180,85 @@ function filtrarPropiedades() {
 }
 
 /* ===== RANGO DE PRECIOS ===== */
-function initRangoPrecios() {
-  const rMin    = document.getElementById('rangeMin');
-  const rMax    = document.getElementById('rangeMax');
-  const lblMin  = document.getElementById('precioMin');
-  const lblMax  = document.getElementById('precioMax');
-  const track   = document.getElementById('rangeTrack');
+function etiqueta(val) {
+  if (val >= 1000) return `$${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}B`;
+  return `$${val}M`;
+}
 
+function actualizarSlider() {
+  const rMin  = document.getElementById('rangeMin');
+  const rMax  = document.getElementById('rangeMax');
+  const lblMin = document.getElementById('precioMin');
+  const lblMax = document.getElementById('precioMax');
+  const track  = document.getElementById('rangeTrack');
   if (!rMin || !rMax) return;
 
-  function etiqueta(val) {
-    if (val >= 1000) return `$${(val / 1000).toFixed(0)}B`;
-    return `$${val}M`;
+  const absMin = parseInt(rMin.min);
+  const absMax = parseInt(rMax.max);
+  const step   = parseInt(rMin.step) || 10;
+  let min = parseInt(rMin.value);
+  let max = parseInt(rMax.value);
+
+  if (min > max - step) {
+    if (document.activeElement === rMin) { rMin.value = max - step; min = max - step; }
+    else                                  { rMax.value = min + step; max = min + step; }
   }
 
-  function actualizar() {
-    let min = parseInt(rMin.value);
-    let max = parseInt(rMax.value);
+  lblMin.textContent = etiqueta(min);
+  lblMax.textContent = etiqueta(max);
 
-    /* Evitar que se crucen */
-    if (min > max - 50) {
-      if (document.activeElement === rMin) {
-        rMin.value = max - 50;
-        min = max - 50;
-      } else {
-        rMax.value = min + 50;
-        max = min + 50;
-      }
-    }
-
-    lblMin.textContent = etiqueta(min);
-    lblMax.textContent = etiqueta(max);
-
-    /* Colorear el segmento seleccionado */
-    const total = 1000 - 50;
-    const p1 = ((min - 50) / total) * 100;
-    const p2 = ((max - 50) / total) * 100;
-    if (track) {
-      track.style.background =
-        `linear-gradient(to right,
-          var(--dark-4) ${p1}%,
-          var(--gold) ${p1}%,
-          var(--gold) ${p2}%,
-          var(--dark-4) ${p2}%)`;
-    }
+  const total = absMax - absMin || 1;
+  const p1 = ((min - absMin) / total) * 100;
+  const p2 = ((max - absMin) / total) * 100;
+  if (track) {
+    track.style.background =
+      `linear-gradient(to right, var(--dark-4) ${p1}%, var(--gold) ${p1}%, var(--gold) ${p2}%, var(--dark-4) ${p2}%)`;
   }
+}
 
-  rMin.addEventListener('input', actualizar);
-  rMax.addEventListener('input', actualizar);
-  actualizar();
+function initRangoPrecios() {
+  const rMin = document.getElementById('rangeMin');
+  const rMax = document.getElementById('rangeMax');
+  if (!rMin || !rMax) return;
+  rMin.addEventListener('input', actualizarSlider);
+  rMax.addEventListener('input', actualizarSlider);
+  actualizarSlider();
+}
+
+/* Ajusta las ciudades y el rango de precio dinámicamente según las propiedades cargadas */
+function actualizarFiltrosDinamicos(lista) {
+  const CIUDADES_LABEL = {
+    medellin: 'Medellín', bogota: 'Bogotá', cali: 'Cali',
+    barranquilla: 'Barranquilla', cartagena: 'Cartagena',
+    covenas: 'Coveñas', 'santa marta': 'Santa Marta',
+    pereira: 'Pereira', manizales: 'Manizales', robledo: 'Robledo',
+  };
+
+  const ciudadesUnicas = [...new Set(lista.map(p => p.ciudad).filter(Boolean))].sort();
+  const sel = document.getElementById('filtroCiudad');
+  sel.innerHTML = '<option value="">Ciudad</option>';
+  ciudadesUnicas.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = CIUDADES_LABEL[c] || (c.charAt(0).toUpperCase() + c.slice(1));
+    sel.appendChild(opt);
+  });
+
+  const precios = lista.map(p => p.precio).filter(Boolean);
+  if (precios.length === 0) return;
+
+  const minM = Math.floor(Math.min(...precios) / 1000000);
+  const maxM = Math.ceil(Math.max(...precios)  / 1000000);
+  const step = Math.max(10, Math.ceil((maxM - minM) / 20 / 10) * 10);
+  const sliderMin = Math.max(0, Math.floor((minM - step) / step) * step);
+  const sliderMax = Math.ceil((maxM + step) / step) * step;
+
+  const rMin = document.getElementById('rangeMin');
+  const rMax = document.getElementById('rangeMax');
+  [rMin, rMax].forEach(r => { r.min = sliderMin; r.max = sliderMax; r.step = step; });
+  rMin.value = sliderMin;
+  rMax.value = sliderMax;
+  actualizarSlider();
 }
 
 /* ===== MAPA DE GALERÍAS ===== */
@@ -477,6 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  actualizarFiltrosDinamicos(propiedades);
   renderPropiedades(propiedades);
   initLightbox();
   initNavbar();
