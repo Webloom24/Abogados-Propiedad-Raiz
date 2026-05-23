@@ -399,6 +399,7 @@ function initPropForm() {
       ${modoEdicion ? 'Actualizando...' : 'Guardando...'}
     </span>`;
 
+    let filaIdNueva = null;
     try {
       const datos = leerDatosFormulario();
 
@@ -435,6 +436,7 @@ function initPropForm() {
           .single();
 
         if (insertErr) throw insertErr;
+        filaIdNueva = fila.id;
 
         mostrarProgreso();
         const urls = await subirImagenes(imagenesNuevas, fila.id);
@@ -444,6 +446,7 @@ function initPropForm() {
           .eq('id', fila.id);
 
         if (updateErr) throw updateErr;
+        filaIdNueva = null;
 
         cerrarModal();
         await cargarPropiedades();
@@ -451,6 +454,10 @@ function initPropForm() {
       }
 
     } catch (err) {
+      if (filaIdNueva) {
+        await sb.from('propiedades').delete().eq('id', filaIdNueva).catch(() => {});
+        filaIdNueva = null;
+      }
       mostrarToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;

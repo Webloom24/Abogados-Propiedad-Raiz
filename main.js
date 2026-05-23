@@ -148,7 +148,8 @@ function renderPropiedades(lista) {
 }
 
 function irAGaleria(galeriaId) {
-  const galeria = galerias[galeriaId] || galeriaRobledo;
+  const galeria = galerias[galeriaId];
+  if (!galeria || galeria.length === 0) return;
   abrirLightbox(0, galeria);
 }
 
@@ -295,6 +296,10 @@ function actualizarLightbox() {
   img.src       = data.src;
   img.alt       = data.alt;
   counter.textContent = `${lightboxIndex + 1} / ${galeriaActual.length}`;
+
+  const soloUna = galeriaActual.length <= 1;
+  document.getElementById('lightboxPrev').style.display = soloUna ? 'none' : '';
+  document.getElementById('lightboxNext').style.display = soloUna ? 'none' : '';
 }
 
 function imagenSiguiente() {
@@ -391,7 +396,6 @@ function initFormulario() {
   form.addEventListener('submit', e => {
     e.preventDefault();
 
-    /* Validación básica */
     let valido = true;
     form.querySelectorAll('[required]').forEach(field => {
       field.classList.remove('error');
@@ -402,23 +406,30 @@ function initFormulario() {
     });
     if (!valido) return;
 
-    const btn = form.querySelector('[type="submit"]');
-    btn.textContent = 'Enviando...';
-    btn.disabled = true;
+    const nombre   = document.getElementById('nombre').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+    const tipo     = document.getElementById('tipoInteres').value;
+    const mensaje  = document.getElementById('mensaje').value.trim();
 
-    /* Simulación de envío */
+    const tipoLabel = tipo  ? `Tipo de interés: ${tipo}\n` : '';
+    const telLabel  = telefono ? `Teléfono: ${telefono}\n` : '';
+
+    const texto = `Hola, me contacto desde el sitio web.\n\nNombre: ${nombre}\nCorreo: ${email}\n${telLabel}${tipoLabel}\nMensaje: ${mensaje}`;
+
+    window.open(
+      `https://wa.me/573005981958?text=${encodeURIComponent(texto)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    document.getElementById('formSuccess').classList.add('visible');
+    form.reset();
     setTimeout(() => {
-      document.getElementById('formSuccess').classList.add('visible');
-      form.reset();
-      btn.textContent = 'Enviar consulta';
-      btn.disabled = false;
-      setTimeout(() => {
-        document.getElementById('formSuccess').classList.remove('visible');
-      }, 5500);
-    }, 1000);
+      document.getElementById('formSuccess').classList.remove('visible');
+    }, 5500);
   });
 
-  /* Limpiar error al escribir */
   form.querySelectorAll('[required]').forEach(field => {
     field.addEventListener('input', () => field.classList.remove('error'));
   });
@@ -477,6 +488,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               src: url,
               alt: `${row.titulo || 'Propiedad'} — Foto ${i + 1}`,
             }));
+          } else if (row.imagen) {
+            galerias[galeriaId] = [{ src: row.imagen, alt: row.titulo || 'Propiedad' }];
           }
 
           propiedades.push({ ...row, galeriaId });
